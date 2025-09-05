@@ -30,8 +30,8 @@ variable "instance_name" {
 }
 
 # Uncomment if you want to pass SGs via tfvars
-# variable "security_group_ids" {
-#   description = "List of security group IDs"
-#   type        = list(string)
-#   default     = []
-# }
+variable "security_group_ids" {
+  description = "List of security group IDs"
+  type        = list(string)
+  default     = []
+}
