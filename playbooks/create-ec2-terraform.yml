@@ -17,6 +17,8 @@
         workspace: default
         variables_files:
           - "{{ tf_var_file }}"
+        backend_config_files:
+          - "{{ lookup('ansible.builtin.env', 'TF_BACKEND_CONFIG_FILE') }}"
       register: tf_result
 
     - name: Show Terraform result
