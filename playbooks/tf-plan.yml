@@ -9,7 +9,7 @@
     tf_var_file: "{{ tf_project_dir }}/terraform.tfvars"
     tf_workspace: "default"
     tf_plan_path: "{{ tf_project_dir }}/plan.tfplan"
-    aap_password: "{{ lookup('env', 'AAP_PASSWORD') }}"
+    aap_password: "{{ lookup('ansible.builtin.env', 'AAP_PASSWORD') }}"
 
   tasks:
     # ---------------------------------------------------------
