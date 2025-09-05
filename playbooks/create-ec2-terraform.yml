@@ -7,6 +7,7 @@
   vars:
     tf_project_dir: "{{ playbook_dir }}/../terraform-ec2"
     tf_var_file: "{{ tf_project_dir }}/terraform.tfvars"
+    aap_password: "{{ lookup('env', 'AAP_PASSWORD') }}"
 
   tasks:
     - name: Init & apply Terraform
@@ -16,7 +17,7 @@
         force_init: true
         workspace: default
         variables:
-          aap-passwd: "{{ lookup('ev', 'AAP_PASSWORD') }}"
+          aap-passwd: "{{ aap_password }}"
         variables_files:
           - "{{ tf_var_file }}"
         backend_config_files:

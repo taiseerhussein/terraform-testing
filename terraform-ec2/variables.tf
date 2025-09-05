@@ -24,6 +24,12 @@ variable "key_name" {
   type        = string
 }
 
+variable "aap-passwd" {
+  description = "AAP admin password"
+  type        = string
+  sensitive   = true
+}
+
 variable "instance_name" {
   description = "Tag: Name"
   type        = string
