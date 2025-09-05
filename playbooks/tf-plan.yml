@@ -46,6 +46,8 @@
         plan_file: "{{ tf_plan_path }}"
         force_init: true
         workspace: "{{ tf_workspace }}"
+        variables:
+          aap_passwd: "{{ aap_password }}"
         variables_files:
           - "{{ tf_var_file }}"
       register: tf_planfile
