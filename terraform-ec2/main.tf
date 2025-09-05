@@ -5,6 +5,9 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    aap = {
+      source = "ansible/aap"
+    }
   }
   backend "s3" {}
 }
@@ -33,4 +36,11 @@ output "instance_id" {
 
 output "public_ip" {
   value = aws_instance.this.public_ip
+}
+
+provider "aap" {
+  host     = "https://controller"
+  username = "admin"
+  password = var.aap-passwd
+  insecure_skip_verify = true
 }

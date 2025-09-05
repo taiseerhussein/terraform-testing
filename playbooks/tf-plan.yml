@@ -19,6 +19,8 @@
         project_path: "{{ tf_project_dir }}"
         force_init: true
         workspace: "{{ tf_workspace }}"
+        variables:
+          aap-passwd: "{{ lookup('ev', 'AAP_PASSWORD') }}"
         variables_files:
           - "{{ tf_var_file }}"
         backend_config_files:

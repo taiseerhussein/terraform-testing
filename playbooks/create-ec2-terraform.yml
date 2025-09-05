@@ -15,6 +15,8 @@
         state: present              # use 'absent' to destroy
         force_init: true
         workspace: default
+        variables:
+          aap-passwd: "{{ lookup('ev', 'AAP_PASSWORD') }}"
         variables_files:
           - "{{ tf_var_file }}"
         backend_config_files:
