@@ -1,0 +1,24 @@
+---
+- name: Provision EC2 via Terraform (with var file)
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    tf_project_dir: "{{ playbook_dir }}/../terraform-ec2"
+    tf_var_file: "{{ tf_project_dir }}/terraform.tfvars"
+
+  tasks:
+    - name: Init & apply Terraform
+      cloud.terraform.terraform:
+        project_path: "{{ tf_project_dir }}"
+        state: present              # use 'absent' to destroy
+        force_init: true
+        workspace: default
+        variables_files:
+          - "{{ tf_var_file }}"
+      register: tf_result
+
+    - name: Show Terraform result
+      debug:
+        var: tf_result
