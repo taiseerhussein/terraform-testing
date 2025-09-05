@@ -21,6 +21,8 @@
         workspace: "{{ tf_workspace }}"
         variables_files:
           - "{{ tf_var_file }}"
+        backend_config_files:
+          - "{{ lookup('ansible.builtin.env', 'TF_BACKEND_CONFIG_FILE') }}"
       check_mode: true
       register: tf_plan
       tags: [plan_check]
