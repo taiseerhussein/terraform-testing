@@ -37,3 +37,10 @@ output "instance_id" {
 output "public_ip" {
   value = aws_instance.this.public_ip
 }
+
+provider "aap" {
+  host     = "https://controller"
+  username = "admin"
+  password = "aap"
+  insecure_skip_verify = true
+}
