@@ -1,0 +1,62 @@
+---
+- name: Terraform plan options (no apply)
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    tf_project_dir: "{{ playbook_dir }}/../terraform-ec2"
+    tf_var_file: "{{ tf_project_dir }}/terraform.tfvars"
+    tf_workspace: "default"
+    tf_plan_path: "{{ tf_project_dir }}/plan.tfplan"
+
+  tasks:
+    # ---------------------------------------------------------
+    # Option A — plan-only via Ansible check mode (quickest)
+    # ---------------------------------------------------------
+    - name: Terraform plan (module in check mode)
+      cloud.terraform.terraform:
+        project_path: "{{ tf_project_dir }}"
+        force_init: true
+        workspace: "{{ tf_workspace }}"
+        variables_files:
+          - "{{ tf_var_file }}"
+      check_mode: true
+      register: tf_plan
+      tags: [plan_check]
+
+    - name: Show command Ansible built (check-mode run)
+      debug:
+        var: tf_plan.command
+      when: tf_plan is defined
+      tags: [plan_check]
+
+    # ---------------------------------------------------------
+    # Option B — generate a plan file for later review/apply
+    # ---------------------------------------------------------
+    - name: Terraform plan to file (no apply)
+      cloud.terraform.terraform:
+        project_path: "{{ tf_project_dir }}"
+        state: planned
+        plan_file: "{{ tf_plan_path }}"
+        force_init: true
+        workspace: "{{ tf_workspace }}"
+        variables_files:
+          - "{{ tf_var_file }}"
+      register: tf_planfile
+      tags: [plan_file]
+
+    - name: Show plan file contents (human-readable)
+      command: terraform show -no-color "{{ tf_plan_path }}"
+      args:
+        chdir: "{{ tf_project_dir }}"
+      register: plan_text
+      changed_when: false
+      when: tf_planfile is defined
+      tags: [plan_file]
+
+    - name: Print plan summary
+      debug:
+        msg: "{{ plan_text.stdout }}"
+      when: plan_text is defined
+      tags: [plan_file]
