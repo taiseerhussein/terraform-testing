@@ -9,6 +9,7 @@
     tf_var_file: "{{ tf_project_dir }}/terraform.tfvars"
     tf_workspace: "default"
     tf_plan_path: "{{ tf_project_dir }}/plan.tfplan"
+    aap_password: "{{ lookup('env', 'AAP_PASSWORD') }}"
 
   tasks:
     # ---------------------------------------------------------
@@ -20,7 +21,7 @@
         force_init: true
         workspace: "{{ tf_workspace }}"
         variables:
-          aap-passwd: "{{ lookup('ev', 'AAP_PASSWORD') }}"
+          aap-passwd: "{{ aap_password }}"
         variables_files:
           - "{{ tf_var_file }}"
         backend_config_files:
