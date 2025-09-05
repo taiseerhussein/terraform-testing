@@ -24,7 +24,7 @@ variable "key_name" {
   type        = string
 }
 
-variable "aap-passwd" {
+variable "aap_passwd" {
   description = "AAP admin password"
   type        = string
   sensitive   = true

@@ -41,6 +41,6 @@ output "public_ip" {
 provider "aap" {
   host     = "https://controller"
   username = "admin"
-  password = var.aap-passwd
+  password = var.aap_passwd
   insecure_skip_verify = true
 }

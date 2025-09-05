@@ -21,7 +21,7 @@
         force_init: true
         workspace: "{{ tf_workspace }}"
         variables:
-          aap-passwd: "{{ aap_password }}"
+          aap_passwd: "{{ aap_password }}"
         variables_files:
           - "{{ tf_var_file }}"
         backend_config_files:
