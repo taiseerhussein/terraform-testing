@@ -5,7 +5,15 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+
+    aap = {
+      source = "ansible/aap"
+    }
+
   }
+  
+  backend "s3" {}
+
 }
 
 provider "aws" {
