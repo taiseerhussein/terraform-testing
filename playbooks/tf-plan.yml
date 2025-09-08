@@ -9,21 +9,22 @@
     terraform_working_dir: /tmp/srv/
     terraform_state: present
 
-    # tf_project_dir: "{{ playbook_dir }}/../terraform-ec2"
-    # tf_var_file: "{{ tf_project_dir }}/terraform.tfvars"
-
     tf_project_dir: "{{ terraform_working_dir }}/aws"
     tf_var_file: "{{ tf_project_dir }}/terraform.tfvars"
-    # tf_project_dir: "{{ playbook_dir }}/../terraform-ec2"
-   # tf_var_file: "{{ tf_project_dir }}/terraform.tfvars"
+
     tf_workspace: "default"
     tf_plan_path: "{{ tf_project_dir }}/plan.tfplan"
     aap_password: "{{ lookup('ansible.builtin.env', 'AAP_PASSWORD') }}"
 
   tasks:
-    # ---------------------------------------------------------
-    # Option A — plan-only via Ansible check mode (quickest)
-    # ---------------------------------------------------------
+    
+    - name: Clone Terraform Repo
+      ansible.builtin.git:
+        repo: 'https://github.com/taiseerhussein/terraform-files.git'
+        version: main
+        accept_newhostkey: true
+        dest: "{{ terraform_working_dir }}"
+
     - name: Terraform plan (module in check mode)
       cloud.terraform.terraform:
         project_path: "{{ tf_project_dir }}"
@@ -45,34 +46,4 @@
       when: tf_plan is defined
       tags: [plan_check]
 
-    # ---------------------------------------------------------
-    # Option B — generate a plan file for later review/apply
-    # ---------------------------------------------------------
-    # - name: Terraform plan to file (no apply)
-    #   cloud.terraform.terraform:
-    #     project_path: "{{ tf_project_dir }}"
-    #     state: planned
-    #     plan_file: "{{ tf_plan_path }}"
-    #     force_init: true
-    #     workspace: "{{ tf_workspace }}"
-    #     variables:
-    #       aap_passwd: "{{ aap_password }}"
-    #     variables_files:
-    #       - "{{ tf_var_file }}"
-    #   register: tf_planfile
-    #   tags: [plan_file]
-
-    # - name: Show plan file contents (human-readable)
-    #   command: terraform show -no-color "{{ tf_plan_path }}"
-    #   args:
-    #     chdir: "{{ tf_project_dir }}"
-    #   register: plan_text
-    #   changed_when: false
-    #   when: tf_planfile is defined
-    #   tags: [plan_file]
-
-    # - name: Print plan summary
-    #   debug:
-    #     msg: "{{ plan_text.stdout }}"
-    #   when: plan_text is defined
-    #   tags: [plan_file]
+    
