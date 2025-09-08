@@ -39,31 +39,31 @@
     # ---------------------------------------------------------
     # Option B — generate a plan file for later review/apply
     # ---------------------------------------------------------
-    - name: Terraform plan to file (no apply)
-      cloud.terraform.terraform:
-        project_path: "{{ tf_project_dir }}"
-        state: planned
-        plan_file: "{{ tf_plan_path }}"
-        force_init: true
-        workspace: "{{ tf_workspace }}"
-        variables:
-          aap_passwd: "{{ aap_password }}"
-        variables_files:
-          - "{{ tf_var_file }}"
-      register: tf_planfile
-      tags: [plan_file]
+    # - name: Terraform plan to file (no apply)
+    #   cloud.terraform.terraform:
+    #     project_path: "{{ tf_project_dir }}"
+    #     state: planned
+    #     plan_file: "{{ tf_plan_path }}"
+    #     force_init: true
+    #     workspace: "{{ tf_workspace }}"
+    #     variables:
+    #       aap_passwd: "{{ aap_password }}"
+    #     variables_files:
+    #       - "{{ tf_var_file }}"
+    #   register: tf_planfile
+    #   tags: [plan_file]
 
-    - name: Show plan file contents (human-readable)
-      command: terraform show -no-color "{{ tf_plan_path }}"
-      args:
-        chdir: "{{ tf_project_dir }}"
-      register: plan_text
-      changed_when: false
-      when: tf_planfile is defined
-      tags: [plan_file]
+    # - name: Show plan file contents (human-readable)
+    #   command: terraform show -no-color "{{ tf_plan_path }}"
+    #   args:
+    #     chdir: "{{ tf_project_dir }}"
+    #   register: plan_text
+    #   changed_when: false
+    #   when: tf_planfile is defined
+    #   tags: [plan_file]
 
-    - name: Print plan summary
-      debug:
-        msg: "{{ plan_text.stdout }}"
-      when: plan_text is defined
-      tags: [plan_file]
+    # - name: Print plan summary
+    #   debug:
+    #     msg: "{{ plan_text.stdout }}"
+    #   when: plan_text is defined
+    #   tags: [plan_file]

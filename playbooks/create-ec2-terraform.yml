@@ -5,15 +5,31 @@
   gather_facts: false
 
   vars:
-    tf_project_dir: "{{ playbook_dir }}/../terraform-ec2"
+    tf_build: "ansible01"
+    terraform_working_dir: /tmp/srv/
+    terraform_state: present
+
+    # tf_project_dir: "{{ playbook_dir }}/../terraform-ec2"
+    # tf_var_file: "{{ tf_project_dir }}/terraform.tfvars"
+
+    tf_project_dir: "{{ terraform_working_dir }}/aws"
     tf_var_file: "{{ tf_project_dir }}/terraform.tfvars"
+
     aap_password: "{{ lookup('env', 'AAP_PASSWORD') }}"
 
   tasks:
+    - name: Clone Terraform Repo
+      ansible.builtin.git:
+        repo: 'https://github.com/taiseerhussein/terraform-files.git'
+        version: main
+        accept_newhostkey: true
+        # key_file: "{{ cert_key_file }}"
+        dest: "{{ terraform_working_dir }}"
+
     - name: Init & apply Terraform
       cloud.terraform.terraform:
         project_path: "{{ tf_project_dir }}"
-        state: present              # use 'absent' to destroy
+        state: present             
         force_init: true
         workspace: default
         variables:
