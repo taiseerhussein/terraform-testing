@@ -61,6 +61,17 @@
             {{ 'Files were reformatted.' if (tf_fmt_fix is defined and tf_fmt_fix.rc == 2)
               else 'No reformatting required.' }}
               
+    - name: Terraform init (idempotent)
+      ansible.builtin.command:
+        cmd: >
+          terraform init -input=false -reconfigure
+          {{ '-upgrade' if (tf_upgrade | default(false)) else '' }}
+         #  {{ tf_backend_flags | join(' ') }}
+        chdir: "{{ project_path }}"
+      register: tf_init
+      changed_when: "'Downloading' in tf_init.stdout or 'Upgrading' in tf_init.stdout"
+      failed_when: tf_init.rc != 0
+
     - name: Terraform plan (CLI, with detailed exit code)
       ansible.builtin.command:
         cmd: terraform plan -out=tfplan -detailed-exitcode -input=false
