@@ -12,6 +12,7 @@
     tf_var_file: "{{ tf_project_dir }}/terraform.tfvars"
 
     aap_password: "{{ lookup('env', 'AAP_PASSWORD') }}"
+    tf_backend_flags: "{{ lookup('ansible.builtin.env', 'TF_BACKEND_CONFIG_FILE') }}"
 
   tasks:
     - name: Clone Terraform Repo
@@ -66,7 +67,7 @@
         cmd: >
           terraform init -input=false -reconfigure
           {{ '-upgrade' if (tf_upgrade | default(false)) else '' }}
-         #  {{ tf_backend_flags | join(' ') }}
+          {{ tf_backend_flags | join(' ') }}
         chdir: "{{ tf_project_dir }}"
       register: tf_init
       changed_when: "'Downloading' in tf_init.stdout or 'Upgrading' in tf_init.stdout"
