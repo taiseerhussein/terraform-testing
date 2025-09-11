@@ -60,3 +60,22 @@
           - >-
             {{ 'Files were reformatted.' if (tf_fmt_fix is defined and tf_fmt_fix.rc == 2)
               else 'No reformatting required.' }}
+              
+    - name: Terraform plan (CLI, with detailed exit code)
+      ansible.builtin.command:
+        cmd: terraform plan -out=tfplan -detailed-exitcode -input=false
+        chdir: "{{ tf_project_dir }}"
+      register: tf_plan_cli
+      changed_when: tf_plan_cli.rc == 2
+      failed_when: tf_plan_cli.rc not in [0,2]
+
+    - name: Show plan summary (text)
+      ansible.builtin.command:
+        cmd: terraform show -no-color tfplan
+        chdir: "{{ tf_project_dir }}"
+      register: tf_plan_show
+      changed_when: false
+
+    - name: Print plan (trimmed)
+      ansible.builtin.debug:
+        msg: "{{ tf_plan_show.stdout }}"
