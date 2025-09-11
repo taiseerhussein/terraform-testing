@@ -23,40 +23,40 @@
         dest: "{{ terraform_working_dir }}"
 
     - name: Check Terraform formatting (lints only)
-  ansible.builtin.command:
-    cmd: terraform fmt -check -recursive
-    chdir: "{{ tf_project_dir }}"
-  register: tf_fmt_check
-  changed_when: false            # lint step never marks changed
-  failed_when: tf_fmt_check.rc not in [0,3]
+      ansible.builtin.command:
+        cmd: terraform fmt -check -recursive
+        chdir: "{{ tf_project_dir }}"
+      register: tf_fmt_check
+      changed_when: false            # lint step never marks changed
+      failed_when: tf_fmt_check.rc not in [0,3]
 
-- name: Show files that would be reformatted
-  when: tf_fmt_check.rc == 3
-  ansible.builtin.debug:
-    var: tf_fmt_check.stdout_lines
+    - name: Show files that would be reformatted
+      when: tf_fmt_check.rc == 3
+      ansible.builtin.debug:
+        var: tf_fmt_check.stdout_lines
 
-- name: Auto-format Terraform files (because -check found issues)
-  when: tf_fmt_check.rc == 3
-  ansible.builtin.command:
-    cmd: terraform fmt -recursive
-    chdir: "{{ tf_project_dir }}"
-  register: tf_fmt_fix
-  changed_when: tf_fmt_fix.rc == 2
-  failed_when: tf_fmt_fix.rc not in [0,2]
+    - name: Auto-format Terraform files (because -check found issues)
+      when: tf_fmt_check.rc == 3
+      ansible.builtin.command:
+        cmd: terraform fmt -recursive
+        chdir: "{{ tf_project_dir }}"
+      register: tf_fmt_fix
+      changed_when: tf_fmt_fix.rc == 2
+      failed_when: tf_fmt_fix.rc not in [0,2]
 
-- name: Re-check formatting to enforce cleanliness
-  when: tf_fmt_check.rc == 3
-  ansible.builtin.command:
-    cmd: terraform fmt -check -recursive
-    chdir: "{{ tf_project_dir }}"
-  register: tf_fmt_recheck
-  changed_when: false
-  failed_when: tf_fmt_recheck.rc != 0
+    - name: Re-check formatting to enforce cleanliness
+      when: tf_fmt_check.rc == 3
+      ansible.builtin.command:
+        cmd: terraform fmt -check -recursive
+        chdir: "{{ tf_project_dir }}"
+      register: tf_fmt_recheck
+      changed_when: false
+      failed_when: tf_fmt_recheck.rc != 0
 
-- name: Summary of formatting
-  ansible.builtin.debug:
-    msg:
-      - "Initial fmt check rc: {{ tf_fmt_check.rc }}"
-      - >-
-        {{ 'Files were reformatted.' if (tf_fmt_fix is defined and tf_fmt_fix.rc == 2)
-           else 'No reformatting required.' }}
+    - name: Summary of formatting
+      ansible.builtin.debug:
+        msg:
+          - "Initial fmt check rc: {{ tf_fmt_check.rc }}"
+          - >-
+            {{ 'Files were reformatted.' if (tf_fmt_fix is defined and tf_fmt_fix.rc == 2)
+              else 'No reformatting required.' }}
