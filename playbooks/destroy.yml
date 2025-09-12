@@ -28,10 +28,12 @@
 
     - name: Terraform DESTROY (state=absent)
       cloud.terraform.terraform:
-        project_path: default
+        project_path: "{{ tf_project_dir }}"
         state: absent
         force_init: true
-        workspace: "{{ tf_workspace }}"
+        workspace: default
+        variables:
+          aap_passwd: "{{ aap_password }}"
         variables_files:
           - "{{ tf_var_file }}"
         backend_config_files:
