@@ -32,6 +32,7 @@
         workspace: "{{ tf_workspace }}"
         variables:
           aap_passwd: "{{ aap_password }}"
+        plan_file: tfplan
         variables_files:
           - "{{ tf_var_file }}"
         backend_config_files:
@@ -42,7 +43,7 @@
     
     - name: Stash the plan into a variable (optional, for approvals/artifacts)
       cloud.terraform.plan_stash:
-        path: "{{ tf_project_dir }}"
+        path: "{{ tf_project_dir }}/tfplan"
         var_name: stashed_plan
         state: stash
       # no_log: true
