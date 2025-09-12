@@ -45,7 +45,7 @@
         path: "{{ tf_project_dir }}/tfplan"
         var_name: stashed_plan
         state: stash
-      no_log: true
+      # no_log: true
 
     - name: Show a summary of planned actions
       ansible.builtin.debug:
