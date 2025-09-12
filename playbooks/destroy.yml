@@ -26,16 +26,22 @@
         # key_file: "{{ cert_key_file }}"
         dest: "{{ terraform_working_dir }}"
 
-    - name: Destroy the infra
+    - name: Terraform DESTROY (state=absent)
       cloud.terraform.terraform:
         project_path: "{{ tf_project_dir }}"
-        state: absent             
+        state: absent
         force_init: true
-        workspace: default
-        variables:
-          aap_passwd: "{{ aap_password }}"
+        workspace: "{{ tf_workspace }}"
         variables_files:
           - "{{ tf_var_file }}"
         backend_config_files:
           - "{{ lookup('ansible.builtin.env', 'TF_BACKEND_CONFIG_FILE') }}"
+      register: tf_destroy
+      tags: [destroy]
+
+    - name: Show destroy result
+      debug:
+        var: tf_destroy
+      when: tf_destroy is defined
+      tags: [destroy]
      # register: tf_result
