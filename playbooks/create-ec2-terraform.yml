@@ -28,7 +28,7 @@
 
     - name: Init & apply Terraform
       cloud.terraform.terraform:
-        tf_project_dir: "{{ tf_project_dir }}"
+        project_path: "{{ tf_project_dir }}"
         state: present             
         force_init: true
         workspace: default
@@ -49,7 +49,7 @@
 
     - name: Show a summary of planned actions
       ansible.builtin.debug:
-        var: tf_plan.command
+        var: tf_plan.command   # full CLI used, useful for debugging
 
     - name: Show Terraform result
       debug:
