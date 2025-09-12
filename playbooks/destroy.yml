@@ -28,7 +28,7 @@
 
     - name: Terraform DESTROY (state=absent)
       cloud.terraform.terraform:
-        project_path: "{{ tf_project_dir }}"
+        project_path: default
         state: absent
         force_init: true
         workspace: "{{ tf_workspace }}"
