@@ -6,7 +6,7 @@
 
   vars:
     tf_build: "ansible01"
-    terraform_working_dir: /tmp/srv/
+    terraform_working_dir: /tmp/srv
     terraform_state: present
 
     # tf_project_dir: "{{ playbook_dir }}/../terraform-ec2"
@@ -40,17 +40,7 @@
           - "{{ lookup('ansible.builtin.env', 'TF_BACKEND_CONFIG_FILE') }}"
       register: tf_result
     
-    - name: Stash the plan into a variable (optional, for approvals/artifacts)
-      cloud.terraform.plan_stash:
-        path: "{{ tf_project_dir }}"
-        var_name: stashed_plan
-        state: stash
-      # no_log: true
-
-    - name: Show a summary of planned actions
-      ansible.builtin.debug:
-        var: tf_plan.command   # full CLI used, useful for debugging
-
+    
     - name: Show Terraform result
       debug:
         var: tf_result

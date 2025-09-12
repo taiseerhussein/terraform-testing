@@ -39,6 +39,18 @@
       check_mode: true
       register: tf_plan
       tags: [plan_check]
+    
+    - name: Stash the plan into a variable (optional, for approvals/artifacts)
+      cloud.terraform.plan_stash:
+        path: "{{ tf_project_dir }}"
+        var_name: stashed_plan
+        state: stash
+      # no_log: true
+
+    - name: Show a summary of planned actions
+      ansible.builtin.debug:
+        var: tf_plan.command   # full CLI used, useful for debugging
+
 
     - name: Show command Ansible built (check-mode run)
       debug:
