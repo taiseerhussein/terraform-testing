@@ -42,7 +42,7 @@
     
     - name: Stash the plan into a variable (optional, for approvals/artifacts)
       cloud.terraform.plan_stash:
-        path: "{{ tf_project_dir }}/tfplan"
+        path: "{{ tf_project_dir }}"
         var_name: stashed_plan
         state: stash
       # no_log: true
