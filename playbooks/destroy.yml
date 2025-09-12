@@ -1,5 +1,5 @@
 ---
-- name: Provision EC2 via Terraform (with var file)
+- name: Destroy EC2 via Terraform (with var file)
   hosts: localhost
   connection: local
   gather_facts: false
@@ -26,10 +26,10 @@
         # key_file: "{{ cert_key_file }}"
         dest: "{{ terraform_working_dir }}"
 
-    - name: Init & apply Terraform
+    - name: Destroy the infra
       cloud.terraform.terraform:
-        tf_project_dir: "{{ tf_project_dir }}"
-        state: present             
+        project_path: "{{ tf_project_dir }}"
+        state: absent             
         force_init: true
         workspace: default
         variables:
@@ -38,19 +38,4 @@
           - "{{ tf_var_file }}"
         backend_config_files:
           - "{{ lookup('ansible.builtin.env', 'TF_BACKEND_CONFIG_FILE') }}"
-      register: tf_result
-    
-    - name: Stash the plan into a variable (optional, for approvals/artifacts)
-      cloud.terraform.plan_stash:
-        path: "{{ tf_project_dir }}/tfplan"
-        var_name: stashed_plan
-        state: stash
-      no_log: true
-
-    - name: Show a summary of planned actions
-      ansible.builtin.debug:
-        var: tf_plan.command
-
-    - name: Show Terraform result
-      debug:
-        var: tf_result
+     # register: tf_result
