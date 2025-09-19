@@ -121,7 +121,7 @@
         tf_var_args: >-
           {{ tf_vars | dict2items | map('regex_replace', '^(.*)$', '-var \\1') | list
              | map('regex_replace', '^(.*)$', '\\1') | join(' ') }}
-      when: tf_var_file | length == 0
+      # when: tf_var_file | length == 0
 
     - name: Terraform plan (with var-file OR -var)
       ansible.builtin.command: >-
