@@ -185,6 +185,7 @@
         # sse_kms_key_id: "arn:aws:kms:REGION:ACCOUNT:key/KEY-ID"
       loop:
         - "{{ tf_workdir_parent }}/terraform_outputs.json"
+        - "{{ tf_workdir_parent }}/{{ tf_plan_out }}"
         # - "{{ json_report_path }}"
         # - "{{ summary_path }}"
         # - "{{ msg_txt_file }}"
