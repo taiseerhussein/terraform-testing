@@ -140,16 +140,16 @@
         - fail_if_no_changes
         - tf_plan.stdout is search('No changes. Infrastructure is up-to-date.')
 
-    # - name: Terraform apply (auto-approve)
-    #   ansible.builtin.command: >-
-    #     terraform apply -input=false -auto-approve {{ tf_plan_out }}
-    #   args:
-    #     chdir: "{{ tf_workdir }}"
-    #   register: tf_apply
-    #   # Mark changed when apply actually performed something (handles repeated runs)
-    #   changed_when: >
-    #     ('Apply complete!' in tf_apply.stdout) or
-    #     ('No changes. Infrastructure is up-to-date.' not in (tf_plan.stdout | default('')))
+    - name: Terraform apply (auto-approve)
+      ansible.builtin.command: >-
+        terraform apply -input=false -auto-approve {{ tf_plan_out }}
+      args:
+        chdir: "{{ tf_workdir }}"
+      register: tf_apply
+      # Mark changed when apply actually performed something (handles repeated runs)
+      changed_when: >
+        ('Apply complete!' in tf_apply.stdout) or
+        ('No changes. Infrastructure is up-to-date.' not in (tf_plan.stdout | default('')))
 
     - name: Terraform output (json)
       ansible.builtin.command: terraform output -json
