@@ -16,7 +16,7 @@
     tf_var_file: "terraform.tfvars"               # leave "" to skip
     # Option B: inline variables (used if tf_var_file == "")
     aap_password: "{{ lookup('env', 'AAP_PASSWORD') }}"
-    tf_vars: {"aap_passwd": "{{ aap_password }}"}                                   # e.g. {"instance_type": "t3.micro", "name": "demo"}
+    tf_vars: "-var aap_password={{ aap_password }}"
 
     # Optional backend config (written to backend.hcl if provided and used during init)
     s3_bucket: "terraform-taiseer"     # <-- change me
@@ -127,7 +127,7 @@
       ansible.builtin.debug:
         msg: "{{ tf_var_args }}"
     - name: Terraform plan (with var-file OR -var)
-      ansible.builtin.command: terraform plan -input=false -out={{ tf_plan_out }} -var {{ tf_var_args }} -var-file={{ tf_var_file }}
+      ansible.builtin.command: terraform plan -input=false -out={{ tf_plan_out }} {{ tf_vars }} -var-file={{ tf_var_file }}
       args:
         chdir: "{{ tf_workdir }}"
       register: tf_plan
