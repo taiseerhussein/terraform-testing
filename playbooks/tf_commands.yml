@@ -19,8 +19,8 @@
 
     # Optional backend config (written to backend.hcl if provided and used during init)
     tf_backend_hcl: {
-      "bucket": "my-tf-state",
-      "key": "dev/terraform.tfstate",
+      "bucket": "terraform-taiseer",
+      "key": "thussein/tfstatefile",
       "region": "us-east-2"
     }                            # e.g. {"bucket": "my-tf-state", "key": "prod/terraform.tfstate", "region": "us-east-1"}
 
