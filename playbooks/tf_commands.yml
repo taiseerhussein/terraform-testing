@@ -16,7 +16,7 @@
     tf_var_file: "terraform.tfvars"               # leave "" to skip
     # Option B: inline variables (used if tf_var_file == "")
     aap_password: "{{ lookup('env', 'AAP_PASSWORD') }}"
-    tf_vars: "-var aap_password={{ aap_password }}"
+    tf_vars: "-var aap_passwd={{ aap_password }}"
 
     # Optional backend config (written to backend.hcl if provided and used during init)
     s3_bucket: "terraform-taiseer"     # <-- change me
