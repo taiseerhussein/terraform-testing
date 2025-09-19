@@ -18,10 +18,17 @@
     tf_vars: {}                                   # e.g. {"instance_type": "t3.micro", "name": "demo"}
 
     # Optional backend config (written to backend.hcl if provided and used during init)
+    s3_bucket: "terraform-taiseer"     # <-- change me
+    s3_region: "us-east-2"                 # <-- change me
+    s3_acl: "private"
+    s3_storage_class: "STANDARD"
+    s3_presign_expires: 86400   
+    s3_prefix: "unreachable/error_report/job_123"
+
     tf_backend_hcl: {
-      "bucket": "terraform-taiseer",
+      "bucket": "{{ s3_bucket }}",
       "key": "thussein/tfstatefile",
-      "region": "us-east-2"
+      "region": "{{ s3_region }}"
     }                            # e.g. {"bucket": "my-tf-state", "key": "prod/terraform.tfstate", "region": "us-east-1"}
 
     # Plan file name
@@ -162,7 +169,28 @@
         dest: "{{ tf_workdir_parent }}/terraform_outputs.json"
         content: "{{ tf_output.stdout | default('{}') }}"
         mode: "0644"
-
+ 
+    - name: Upload reports to S3
+    # Requires amazon.aws collection and AWS credential/role
+      amazon.aws.s3_object:
+        bucket: "{{ s3_bucket }}"
+        region: "{{ s3_region }}"
+        mode: put
+        object: "{{ s3_prefix }}/{{ item | basename }}"
+        src: "{{ item }}"
+       # acl: "{{ s3_acl }}"
+        # storage_class: "{{ s3_storage_class }}"
+        # Optional org controls:
+        # server_side_encryption: aws:kms
+        # sse_kms_key_id: "arn:aws:kms:REGION:ACCOUNT:key/KEY-ID"
+      loop:
+        - "{{ tf_workdir_parent }}/terraform_outputs.json"
+        # - "{{ json_report_path }}"
+        # - "{{ summary_path }}"
+        # - "{{ msg_txt_file }}"
+      register: _uploads
+      delegate_to: localhost
+      run_once: true
     - name: Show key outputs
       ansible.builtin.debug:
         msg:
