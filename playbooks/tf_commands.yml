@@ -192,5 +192,5 @@
           init_summary: "{{ tf_init.stdout | default('') | regex_search('Terraform has been successfully initialized!|Initializing the backend...', multiline=True) }}"
           workspace: "{{ tf_workspace }}"
           plan_changed: "{{ 'No changes.' not in tf_plan.stdout }}"
-          # apply_tail: "{{ (tf_apply.stdout | default(''))[-500:] }}"
+          apply_tail: "{{ (tf_apply.stdout | default(''))[-500:] }}"
           outputs_file: "{{ tf_workdir_parent }}/terraform_outputs.json"
