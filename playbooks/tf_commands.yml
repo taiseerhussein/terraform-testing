@@ -67,15 +67,15 @@
         state: directory
         mode: "0755"
 
-    - name: Write backend.hcl (optional)
-      when: tf_backend_hcl | length > 0
-      ansible.builtin.copy:
-        dest: "{{ tf_workdir }}/backend.hcl"
-        mode: "0600"
-        content: |
-          {% for k, v in tf_backend_hcl.items() -%}
-          {{ k }} = "{{ v }}"
-          {% endfor %}
+    # - name: Write backend.hcl (optional)
+    #   when: tf_backend_hcl | length > 0
+    #   ansible.builtin.copy:
+    #     dest: "{{ tf_workdir }}/backend.hcl"
+    #     mode: "0600"
+    #     content: |
+    #       {% for k, v in tf_backend_hcl.items() -%}
+    #       {{ k }} = "{{ v }}"
+    #       {% endfor %}
 
     - name: Terraform init
       ansible.builtin.command: >-
@@ -138,16 +138,16 @@
         - fail_if_no_changes
         - tf_plan.stdout is search('No changes. Infrastructure is up-to-date.')
 
-    - name: Terraform apply (auto-approve)
-      ansible.builtin.command: >-
-        terraform apply -input=false -auto-approve {{ tf_plan_out }}
-      args:
-        chdir: "{{ tf_workdir }}"
-      register: tf_apply
-      # Mark changed when apply actually performed something (handles repeated runs)
-      changed_when: >
-        ('Apply complete!' in tf_apply.stdout) or
-        ('No changes. Infrastructure is up-to-date.' not in (tf_plan.stdout | default('')))
+    # - name: Terraform apply (auto-approve)
+    #   ansible.builtin.command: >-
+    #     terraform apply -input=false -auto-approve {{ tf_plan_out }}
+    #   args:
+    #     chdir: "{{ tf_workdir }}"
+    #   register: tf_apply
+    #   # Mark changed when apply actually performed something (handles repeated runs)
+    #   changed_when: >
+    #     ('Apply complete!' in tf_apply.stdout) or
+    #     ('No changes. Infrastructure is up-to-date.' not in (tf_plan.stdout | default('')))
 
     - name: Terraform output (json)
       ansible.builtin.command: terraform output -json
@@ -169,5 +169,5 @@
           init_summary: "{{ tf_init.stdout | default('') | regex_search('Terraform has been successfully initialized!|Initializing the backend...', multiline=True) }}"
           workspace: "{{ tf_workspace }}"
           plan_changed: "{{ 'No changes.' not in tf_plan.stdout }}"
-          apply_tail: "{{ (tf_apply.stdout | default(''))[-500:] }}"
+          # apply_tail: "{{ (tf_apply.stdout | default(''))[-500:] }}"
           outputs_file: "{{ tf_workdir_parent }}/terraform_outputs.json"
