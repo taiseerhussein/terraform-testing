@@ -117,15 +117,15 @@
       register: tf_ws_select
       changed_when: false
 
-    - name: Build -var args (if no var-file)
-      ansible.builtin.set_fact:
-        tf_var_args: >-
-          {{ tf_vars | dict2items | map('regex_replace', '^(.*)$', '-var \\1') | list
-             | map('regex_replace', '^(.*)$', '\\1') | join(' ') }}
-      # when: tf_var_file | length == 0
-    - name: Show Args
-      ansible.builtin.debug:
-        msg: "{{ tf_var_args }}"
+    # - name: Build -var args (if no var-file)
+    #   ansible.builtin.set_fact:
+    #     tf_var_args: >-
+    #       {{ tf_vars | dict2items | map('regex_replace', '^(.*)$', '-var \\1') | list
+    #          | map('regex_replace', '^(.*)$', '\\1') | join(' ') }}
+    #   # when: tf_var_file | length == 0
+    # - name: Show Args
+    #   ansible.builtin.debug:
+    #     msg: "{{ tf_var_args }}"
     - name: Terraform plan (with var-file OR -var)
       ansible.builtin.command: terraform plan -input=false -out={{ tf_plan_out }} {{ tf_vars }} -var-file={{ tf_var_file }}
       args:
