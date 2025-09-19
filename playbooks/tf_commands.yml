@@ -9,7 +9,7 @@
     tf_source_repo: "https://github.com/taiseerhussein/terraform-files.git"   # or set to "" to skip cloning
     tf_source_version: "main"
     tf_workdir_parent: "/tmp/aap-tf-work"        # workspace root
-    tf_subdir: "envs/dev"                        # relative dir inside the repo with main.tf
+    tf_subdir: "aws"                        # relative dir inside the repo with main.tf
     tf_workspace: "default"                       # terraform workspace to use/create
 
     # Option A: pass a var-file
@@ -67,15 +67,15 @@
         state: directory
         mode: "0755"
 
-    # - name: Write backend.hcl (optional)
-    #   when: tf_backend_hcl | length > 0
-    #   ansible.builtin.copy:
-    #     dest: "{{ tf_workdir }}/backend.hcl"
-    #     mode: "0600"
-    #     content: |
-    #       {% for k, v in tf_backend_hcl.items() -%}
-    #       {{ k }} = "{{ v }}"
-    #       {% endfor %}
+    - name: Write backend.hcl (optional)
+      when: tf_backend_hcl | length > 0
+      ansible.builtin.copy:
+        dest: "{{ tf_workdir }}/backend.hcl"
+        mode: "0600"
+        content: |
+          {% for k, v in tf_backend_hcl.items() -%}
+          {{ k }} = "{{ v }}"
+          {% endfor %}
 
     - name: Terraform init
       ansible.builtin.command: >-
