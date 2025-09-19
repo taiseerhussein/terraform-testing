@@ -1,0 +1,173 @@
+---
+# file: terraform_init_plan_apply.yml
+- name: Terraform init/plan/apply (canonical commands)
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    # Where the TF code lives. You can point this to a Git repo or a local path.
+    tf_source_repo: "https://github.com/taiseerhussein/terraform-files.git"   # or set to "" to skip cloning
+    tf_source_version: "main"
+    tf_workdir_parent: "/tmp/aap-tf-work"        # workspace root
+    tf_subdir: "envs/dev"                        # relative dir inside the repo with main.tf
+    tf_workspace: "default"                       # terraform workspace to use/create
+
+    # Option A: pass a var-file
+    tf_var_file: "terraform.tfvars"               # leave "" to skip
+    # Option B: inline variables (used if tf_var_file == "")
+    tf_vars: {}                                   # e.g. {"instance_type": "t3.micro", "name": "demo"}
+
+    # Optional backend config (written to backend.hcl if provided and used during init)
+    tf_backend_hcl: {
+      "bucket": "my-tf-state",
+      "key": "dev/terraform.tfstate",
+      "region": "us-east-2"
+    }                            # e.g. {"bucket": "my-tf-state", "key": "prod/terraform.tfstate", "region": "us-east-1"}
+
+    # Plan file name
+    tf_plan_out: "tfplan"
+
+    # Fail the play if "plan" has no changes? (false = still apply)
+    fail_if_no_changes: false
+
+  # Map your cloud creds in AAP Credentials → Environment (example below uses AWS env vars)
+  # Set these via AAP credential injection, NOT hard-coded.
+  # For AWS:
+  #   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN (if using STS), AWS_DEFAULT_REGION
+  # For Azure:
+  #   ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_TENANT_ID, ARM_SUBSCRIPTION_ID
+  # For GCP:
+  #   GOOGLE_APPLICATION_CREDENTIALS (path to JSON) or application-default creds in EE.
+
+  tasks:
+    - name: Ensure workspace root exists
+      ansible.builtin.file:
+        path: "{{ tf_workdir_parent }}"
+        state: directory
+        mode: "0755"
+
+    - name: Clone Terraform repo (skip if local path is used)
+      when: tf_source_repo | length > 0
+      ansible.builtin.git:
+        repo: "{{ tf_source_repo }}"
+        dest: "{{ tf_workdir_parent }}/repo"
+        version: "{{ tf_source_version }}"
+        force: true
+
+    - name: Set Terraform working directory
+      ansible.builtin.set_fact:
+        tf_workdir: >-
+          {{ (tf_source_repo | length > 0)
+              | ternary(tf_workdir_parent ~ '/repo/' ~ tf_subdir, tf_workdir_parent ~ '/' ~ tf_subdir) }}
+
+    - name: Create TF dir if using local source path
+      when: tf_source_repo | length == 0
+      ansible.builtin.file:
+        path: "{{ tf_workdir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Write backend.hcl (optional)
+      when: tf_backend_hcl | length > 0
+      ansible.builtin.copy:
+        dest: "{{ tf_workdir }}/backend.hcl"
+        mode: "0600"
+        content: |
+          {% for k, v in tf_backend_hcl.items() -%}
+          {{ k }} = "{{ v }}"
+          {% endfor %}
+
+    - name: Terraform init
+      ansible.builtin.command: >-
+        terraform init
+        -input=false
+        {% if tf_backend_hcl | length > 0 %}-backend-config=backend.hcl{% endif %}
+      args:
+        chdir: "{{ tf_workdir }}"
+      register: tf_init
+      changed_when: "'Terraform has been successfully initialized!' in tf_init.stdout or 'Initializing the backend...' in tf_init.stdout"
+
+    - name: Ensure workspace exists (list)
+      ansible.builtin.command: terraform workspace list
+      args:
+        chdir: "{{ tf_workdir }}"
+      register: tf_ws_list
+      changed_when: false
+
+    - name: Create workspace if missing
+      ansible.builtin.command: terraform workspace new {{ tf_workspace }}
+      args:
+        chdir: "{{ tf_workdir }}"
+      when: tf_workspace not in (tf_ws_list.stdout_lines | join(' '))
+      register: tf_ws_new
+      changed_when: "'Created and switched to workspace' in tf_ws_new.stdout"
+
+    - name: Select workspace
+      ansible.builtin.command: terraform workspace select {{ tf_workspace }}
+      args:
+        chdir: "{{ tf_workdir }}"
+      register: tf_ws_select
+      changed_when: false
+
+    - name: Build -var args (if no var-file)
+      ansible.builtin.set_fact:
+        tf_var_args: >-
+          {{ tf_vars | dict2items | map('regex_replace', '^(.*)$', '-var \\1') | list
+             | map('regex_replace', '^(.*)$', '\\1') | join(' ') }}
+      when: tf_var_file | length == 0
+
+    - name: Terraform plan (with var-file OR -var)
+      ansible.builtin.command: >-
+        bash -lc "
+        set -e
+        {% if tf_var_file | length > 0 -%}
+        terraform plan -input=false -out={{ tf_plan_out }} -var-file={{ tf_var_file }}
+        {%- else -%}
+        terraform plan -input=false -out={{ tf_plan_out }} {{ tf_var_args }}
+        {%- endif -%}
+        "
+      args:
+        chdir: "{{ tf_workdir }}"
+      register: tf_plan
+      changed_when: "'No changes. Infrastructure is up-to-date.' not in tf_plan.stdout"
+
+    - name: Optionally fail if no changes in plan
+      ansible.builtin.fail:
+        msg: "Plan detected no changes; stopping as requested."
+      when:
+        - fail_if_no_changes
+        - tf_plan.stdout is search('No changes. Infrastructure is up-to-date.')
+
+    - name: Terraform apply (auto-approve)
+      ansible.builtin.command: >-
+        terraform apply -input=false -auto-approve {{ tf_plan_out }}
+      args:
+        chdir: "{{ tf_workdir }}"
+      register: tf_apply
+      # Mark changed when apply actually performed something (handles repeated runs)
+      changed_when: >
+        ('Apply complete!' in tf_apply.stdout) or
+        ('No changes. Infrastructure is up-to-date.' not in (tf_plan.stdout | default('')))
+
+    - name: Terraform output (json)
+      ansible.builtin.command: terraform output -json
+      args:
+        chdir: "{{ tf_workdir }}"
+      register: tf_output
+      changed_when: false
+      failed_when: false
+
+    - name: Save outputs to artifact
+      ansible.builtin.copy:
+        dest: "{{ tf_workdir_parent }}/terraform_outputs.json"
+        content: "{{ tf_output.stdout | default('{}') }}"
+        mode: "0644"
+
+    - name: Show key outputs
+      ansible.builtin.debug:
+        msg:
+          init_summary: "{{ tf_init.stdout | default('') | regex_search('Terraform has been successfully initialized!|Initializing the backend...', multiline=True) }}"
+          workspace: "{{ tf_workspace }}"
+          plan_changed: "{{ 'No changes.' not in tf_plan.stdout }}"
+          apply_tail: "{{ (tf_apply.stdout | default(''))[-500:] }}"
+          outputs_file: "{{ tf_workdir_parent }}/terraform_outputs.json"
