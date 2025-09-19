@@ -169,7 +169,11 @@
         dest: "{{ tf_workdir_parent }}/terraform_outputs.json"
         content: "{{ tf_output.stdout | default('{}') }}"
         mode: "0644"
- 
+        
+    - name: Pause for 5 minutes to build app cache
+      ansible.builtin.pause:
+        minutes: 5
+
     - name: Upload reports to S3
     # Requires amazon.aws collection and AWS credential/role
       amazon.aws.s3_object:
